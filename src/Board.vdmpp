@@ -1,0 +1,60 @@
+class Board
+types
+-- TODO Define types here
+values
+-- TODO Define values here
+instance variables
+-- TODO Define instance variables here
+private counterx: int:=-4;
+private countery: int:=-4;
+private c: int:=0;
+private x: int :=0;
+private board: seq of Cell := [];
+private cell: Cell;
+operations
+-- TODO Define operations here
+ public Board: () ==> Board
+                Board() == (cell := new Cell(); return self);
+
+  public populateBoard:()==>() 
+  populateBoard()==(
+  	while countery<5 do(
+  		if (countery<0) then(
+  			counterx := -4 + abs(countery);
+  			c := 4;
+  		)
+  		else (
+  			counterx := -4;
+  			c := 4-countery;
+  		);
+  		while counterx<=c do(
+  		cell:=new Cell();
+  			if (countery=-4 or countery=-3) then(
+  				cell.setPlayer(<Player2>);
+  			)
+  			else if (countery=4 or countery=3) then(
+  				cell.setPlayer(<Player1>);
+  			)
+  			else if (countery=-2 and(counterx>=0 and counterx<=2)) then(
+  				cell.setPlayer(<Player2>);
+  			)
+  			else if (countery=2 and(counterx>=-2 and counterx<=0)) then(
+  				cell.setPlayer(<Player1>);
+  			)
+  			else (
+  				cell.setPlayer(<X>));
+  			cell.setPos(counterx,countery);
+  			board:= board^[cell];
+  			counterx:=counterx+1;
+  		);
+  		countery:=countery+1;
+  	);
+ 
+  );
+  
+functions
+-- TODO Define functiones here
+		
+traces
+-- TODO Define Combinatorial Test Traces here
+end Board

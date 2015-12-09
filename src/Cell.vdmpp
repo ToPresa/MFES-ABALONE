@@ -1,0 +1,29 @@
+class Cell
+types
+-- TODO Define types here
+public Player = <Player1> | <Player2> | <X>;
+values
+-- TODO Define values here
+
+instance variables
+-- TODO Define instance variables here
+private pos: seq of int := []; --length 2
+private plr: Player := <X>;
+
+operations
+-- TODO Define operations here
+public setPos: int*int ==> () 
+	setPos(x,y) == 
+		atomic (
+			pos := [x,y];
+		);
+public setPlayer: Player ==> () 
+	setPlayer(plyr) == 
+		atomic (
+			plr := plyr;
+		);
+functions
+-- TODO Define functiones here
+traces
+-- TODO Define Combinatorial Test Traces here
+end Cell
