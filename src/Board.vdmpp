@@ -77,11 +77,11 @@ operations
   movePieces(mv,n,dir,pieces)==(
   	if (((mv = <broadside> and isBroadside(pieces)) or (mv = <inline> and isInline(pieces)))
   				and moveWithinBorders(dir,pieces)) then (
-  		cell := new Cell();
-  		cell2 := new Cell();
   		aux := pieces;
   		count := 0;
   		while count<n do(
+  			cell := new Cell();
+  			cell2 := new Cell();
   			x := hd(hd(aux));
   			y := hd(tl(hd(aux)));
   			if (dir = <left>) then (
