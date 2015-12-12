@@ -1,6 +1,8 @@
 class Board
 types
 -- TODO Define types here
+public Movement = <broadside> | <inline>;
+public Direction = <upper_left> | <upper_right> | <downer_left> | <downer_right>;
 values
 -- TODO Define values here
 instance variables
@@ -8,9 +10,19 @@ instance variables
 private counterx: int:=-4;
 private countery: int:=-4;
 private c: int:=0;
-private x: int :=0;
+private x: int:=0;
+private y: int:=0;
 private board: seq of Cell := [];
 private cell: Cell;
+private cell2: Cell;
+private mv: Movement;
+private dir: Direction;
+private count: int;
+private n: int;
+private pieces: seq of seq of int := [];
+private aux: seq of seq of int := [];
+private list_x: seq of int := [];
+private list_y: seq of int := [];
 operations
 -- TODO Define operations here
  public Board: () ==> Board
@@ -18,6 +30,7 @@ operations
 
   public populateBoard:()==>() 
   populateBoard()==(
+  	count := 0;
   	while countery<5 do(
   		if (countery<0) then(
   			counterx := -4 + abs(countery);
@@ -31,15 +44,19 @@ operations
   		cell:=new Cell();
   			if (countery=-4 or countery=-3) then(
   				cell.setPlayer(<Player2>);
+  				count := count+1;
   			)
   			else if (countery=4 or countery=3) then(
   				cell.setPlayer(<Player1>);
+  				count := count+1;
   			)
   			else if (countery=-2 and(counterx>=0 and counterx<=2)) then(
   				cell.setPlayer(<Player2>);
+  				count := count+1;
   			)
   			else if (countery=2 and(counterx>=-2 and counterx<=0)) then(
   				cell.setPlayer(<Player1>);
+  				count := count+1;
   			)
   			else (
   				cell.setPlayer(<X>));
@@ -50,7 +67,137 @@ operations
   		countery:=countery+1;
   	);
  
+  )
+  post count = 28;
+  
+  public movePieces: Movement * int * Direction * seq of seq of int ==>()
+  movePieces(mv,n,dir,pieces)==(
+  	if (mv = <broadside> and isBroadside(pieces)) or (mv = <inline> and isInline(pieces)) then (
+  		movePieces_aux(n,dir,pieces);
+  	)
   );
+  
+  public isBroadside: seq of seq of int ==> bool
+  isBroadside(pieces)==(
+  	aux := pieces;
+  	count := 0;
+  	list_x := [];
+  	list_y := [];
+  	while count < len(pieces) do (
+  		x := hd(hd(aux));
+  		y := hd(tl(hd(aux)));
+  		if (list_x = [] and x>-5 and x<5) then (
+  			list_x := list_x^[x];
+  		)
+  		else if (list_x <> [] and (list_x(len(list_x)) = x-1 or list_x(len(list_x)) = x+1)
+  													and x>-5 and x<5) then (
+  			list_x := list_x^[x];
+  		)
+  		else (
+  			return false;
+  		);
+  		if (list_y = [] and y>-5 and y<5) then (
+  			list_y := list_y^[y];
+  		)
+  		else if (list_y <> [] and list_y(len(list_y)) = y) then (
+  			list_y := list_y^[y];
+  		)
+  		else (
+  			return false;
+  		);
+  		aux := tl(aux);
+  		count := count + 1;
+  	);
+  	return true;
+  )
+  pre len(pieces) > 0 and len(pieces) < 4;
+  
+  public isInline: seq of seq of int ==> bool
+  isInline(pieces)==(
+  	aux := pieces;
+  	count := 0;
+  	list_x := [];
+  	list_y := [];
+  	while count < len(pieces) do (
+  		x := hd(hd(aux));
+  		y := hd(tl(hd(aux)));
+  		if (list_x = [] and x>-5 and x<5) then (
+  			list_x := list_x^[x];
+  		)
+  		else if (list_x <> [] and list_x(len(list_x)) = x) then (
+  			list_x := list_x^[x];
+  		)
+  		else if (list_x <> [] and (list_x(len(list_x)) = x-1 or list_x(len(list_x)) = x+1)
+  													and x>-5 and x<5) then (
+  			list_x := list_x^[x];
+  		)
+  		else (
+  			return false;
+  		);
+  		if (list_y = [] and y>-5 and y<5) then (
+  			list_y := list_y^[y];
+  		)
+  		else if (list_y <> [] and (list_y(len(list_y)) = y-1 or list_y(len(list_y)) = y+1)
+  													and y>-5 and y<5) then (
+  			list_y := list_y^[y];
+  		)
+  		else (
+  			return false;
+  		);
+  		aux := tl(aux);
+  		count := count + 1;
+  	);
+  	return true;
+  )
+  pre len(pieces) > 0 and len(pieces) < 4;
+  
+  public movePieces_aux: int * Direction * seq of seq of int ==>()
+  movePieces_aux(n,dir,pieces)==(
+  	cell := new Cell();
+  	cell2 := new Cell();
+  	aux := pieces;
+  	count := 0;
+  	while count<n do(
+  		x := hd(hd(aux));
+  		y := hd(tl(hd(aux)));
+  		if (dir = <upper_left>) then (
+  			cell.setPos(x,y);
+  			cell2.setPos(x,y-1);
+  			cell.setPlayer(<X>);
+  			cell2.setPlayer(<Player1>);
+  			board := board^[cell];
+  			board := board^[cell2];
+  		)
+  		else if (dir = <upper_right>) then (
+  			cell.setPos(x,y);
+  			cell2.setPos(x+1,y-1);
+  			cell.setPlayer(<X>);
+  			cell2.setPlayer(<Player1>);
+  			board := board^[cell];
+  			board := board^[cell2];
+  		)
+  		else if (dir = <downer_left>) then (
+  			cell.setPos(x,y);
+  			cell2.setPos(x-1,y+1);
+  			cell.setPlayer(<X>);
+  			cell2.setPlayer(<Player1>);
+  			board := board^[cell];
+  			board := board^[cell2];
+  		)
+  		else if (dir = <downer_right>) then (
+  			cell.setPos(x,y);
+  			cell2.setPos(x,y+1);
+  			cell.setPlayer(<X>);
+  			cell2.setPlayer(<Player1>);
+  			board := board^[cell];
+  			board := board^[cell2];
+  		);
+  		aux := tl(aux);
+  		count := count + 1;
+  	);
+  )
+  pre n = len(pieces)
+  post aux = [];
   
 functions
 -- TODO Define functiones here
