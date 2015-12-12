@@ -2,7 +2,7 @@ class Board
 types
 -- TODO Define types here
 public Movement = <broadside> | <inline>;
-public Direction = <upper_left> | <upper_right> | <downer_left> | <downer_right>;
+public Direction = <left> | <right> | <upper_left> | <upper_right> | <downer_left> | <downer_right>;
 values
 -- TODO Define values here
 instance variables
@@ -23,6 +23,9 @@ private pieces: seq of seq of int := [];
 private aux: seq of seq of int := [];
 private list_x: seq of int := [];
 private list_y: seq of int := [];
+private increasingOrderx: bool;
+private increasingOrdery: bool;
+private sameValue: bool;
 operations
 -- TODO Define operations here
  public Board: () ==> Board
@@ -72,10 +75,70 @@ operations
   
   public movePieces: Movement * int * Direction * seq of seq of int ==>()
   movePieces(mv,n,dir,pieces)==(
-  	if (mv = <broadside> and isBroadside(pieces)) or (mv = <inline> and isInline(pieces)) then (
-  		movePieces_aux(n,dir,pieces);
-  	)
-  );
+  	if (((mv = <broadside> and isBroadside(pieces)) or (mv = <inline> and isInline(pieces)))
+  				and moveWithinBorders(dir,pieces)) then (
+  		cell := new Cell();
+  		cell2 := new Cell();
+  		aux := pieces;
+  		count := 0;
+  		while count<n do(
+  			x := hd(hd(aux));
+  			y := hd(tl(hd(aux)));
+  			if (dir = <left>) then (
+  				cell.setPos(x,y);
+  				cell2.setPos(x-1,y);
+	  			cell.setPlayer(<X>);
+	  			cell2.setPlayer(<Player1>);
+  				board := board^[cell];
+  				board := board^[cell2];
+	  		)
+	  		else if (dir = <right>) then (
+	  			cell.setPos(x,y);
+	  			cell2.setPos(x+1,y);
+	  			cell.setPlayer(<X>);
+	  			cell2.setPlayer(<Player1>);
+	  			board := board^[cell];
+	  			board := board^[cell2];
+	  		)
+  			else if (dir = <upper_left>) then (
+  				cell.setPos(x,y);
+  				cell2.setPos(x,y-1);
+	  			cell.setPlayer(<X>);
+	  			cell2.setPlayer(<Player1>);
+  				board := board^[cell];
+  				board := board^[cell2];
+	  		)
+	  		else if (dir = <upper_right>) then (
+	  			cell.setPos(x,y);
+	  			cell2.setPos(x+1,y-1);
+	  			cell.setPlayer(<X>);
+	  			cell2.setPlayer(<Player1>);
+	  			board := board^[cell];
+	  			board := board^[cell2];
+	  		)
+	  		else if (dir = <downer_left>) then (
+	  			cell.setPos(x,y);
+	  			cell2.setPos(x-1,y+1);
+	  			cell.setPlayer(<X>);
+	  			cell2.setPlayer(<Player1>);
+	  			board := board^[cell];
+	  			board := board^[cell2];
+	  		)
+	  		else if (dir = <downer_right>) then (
+	  			cell.setPos(x,y);
+	  			cell2.setPos(x,y+1);
+	  			cell.setPlayer(<X>);
+	  			cell2.setPlayer(<Player1>);
+	  			board := board^[cell];
+	  			board := board^[cell2];
+	  		);
+	  		aux := tl(aux);
+	  		count := count + 1;
+	  	);
+  	);
+  )
+  pre n = len(pieces)
+  post aux = [];
   
   public isBroadside: seq of seq of int ==> bool
   isBroadside(pieces)==(
@@ -89,8 +152,24 @@ operations
   		if (list_x = [] and x>-5 and x<5) then (
   			list_x := list_x^[x];
   		)
-  		else if (list_x <> [] and (list_x(len(list_x)) = x-1 or list_x(len(list_x)) = x+1)
+  		else if (list_x <> [] and list_x(len(list_x)) = x-1 and len(list_x) = 1
   													and x>-5 and x<5) then (
+  			increasingOrderx := true;
+  			list_x := list_x^[x];
+  		)
+  		else if (list_x <> [] and list_x(len(list_x)) = x+1 and len(list_x) = 1
+  													and x>-5 and x<5) then (
+  			increasingOrderx := false;
+  			list_x := list_x^[x];
+  		)
+  		else if (list_x <> [] and list_x(len(list_x)) = x-1 and len(list_x) > 1
+  													and x>-5 and x<5 
+  													and increasingOrderx = true) then (
+  			list_x := list_x^[x];
+  		)
+  		else if (list_x <> [] and list_x(len(list_x)) = x+1 and len(list_x) > 1
+  													and x>-5 and x<5
+  													and increasingOrderx = false) then (
   			list_x := list_x^[x];
   		)
   		else (
@@ -124,11 +203,34 @@ operations
   		if (list_x = [] and x>-5 and x<5) then (
   			list_x := list_x^[x];
   		)
-  		else if (list_x <> [] and list_x(len(list_x)) = x) then (
+  		else if (list_x <> [] and list_x(len(list_x)) = x and len(list_x) = 1) then (
+  			sameValue := true;
   			list_x := list_x^[x];
   		)
-  		else if (list_x <> [] and (list_x(len(list_x)) = x-1 or list_x(len(list_x)) = x+1)
+  		else if (list_x <> [] and list_x(len(list_x)) = x-1 and len(list_x) = 1
   													and x>-5 and x<5) then (
+  			increasingOrderx := true;
+  			sameValue := false;
+  			list_x := list_x^[x];
+  		)
+  		else if (list_x <> [] and list_x(len(list_x)) = x+1 and len(list_x) = 1
+  													and x>-5 and x<5) then (
+  			increasingOrderx := false;
+  			sameValue := false;
+  			list_x := list_x^[x];
+  		)
+  		else if (list_x <> [] and list_x(len(list_x)) = x and len(list_x) > 1
+  													and sameValue = true) then (
+  			list_x := list_x^[x];
+  		)
+  		else if (list_x <> [] and list_x(len(list_x)) = x-1 and len(list_x) > 1
+  													and x>-5 and x<5 
+  													and increasingOrderx = true and sameValue = false) then (
+  			list_x := list_x^[x];
+  		)
+  		else if (list_x <> [] and list_x(len(list_x)) = x+1 and len(list_x) > 1
+  													and x>-5 and x<5
+  													and increasingOrderx = false and sameValue = false) then (
   			list_x := list_x^[x];
   		)
   		else (
@@ -137,8 +239,24 @@ operations
   		if (list_y = [] and y>-5 and y<5) then (
   			list_y := list_y^[y];
   		)
-  		else if (list_y <> [] and (list_y(len(list_y)) = y-1 or list_y(len(list_y)) = y+1)
+  		else if (list_y <> [] and list_y(len(list_y)) = y-1 and len(list_y) = 1
   													and y>-5 and y<5) then (
+  			increasingOrdery := true;
+  			list_y := list_y^[y];
+  		)
+  		else if (list_y <> [] and list_y(len(list_y)) = y+1 and len(list_y) = 1
+  													and y>-5 and y<5) then (
+  			increasingOrdery := false;
+  			list_y := list_y^[y];
+  		)
+  		else if (list_y <> [] and list_y(len(list_y)) = y-1 and len(list_y) > 1
+  													and y>-5 and y<5 
+  													and increasingOrdery = true) then (
+  			list_y := list_y^[y];
+  		)
+  		else if (list_y <> [] and list_y(len(list_y)) = y+1 and len(list_y) > 1
+  													and y>-5 and y<5
+  													and increasingOrdery = false) then (
   			list_y := list_y^[y];
   		)
   		else (
@@ -151,53 +269,26 @@ operations
   )
   pre len(pieces) > 0 and len(pieces) < 4;
   
-  public movePieces_aux: int * Direction * seq of seq of int ==>()
-  movePieces_aux(n,dir,pieces)==(
-  	cell := new Cell();
-  	cell2 := new Cell();
+  public moveWithinBorders: Direction * seq of seq of int ==> bool
+  moveWithinBorders(dir,pieces)==(
   	aux := pieces;
   	count := 0;
-  	while count<n do(
+  	while count < len(pieces) do (
   		x := hd(hd(aux));
   		y := hd(tl(hd(aux)));
-  		if (dir = <upper_left>) then (
-  			cell.setPos(x,y);
-  			cell2.setPos(x,y-1);
-  			cell.setPlayer(<X>);
-  			cell2.setPlayer(<Player1>);
-  			board := board^[cell];
-  			board := board^[cell2];
-  		)
-  		else if (dir = <upper_right>) then (
-  			cell.setPos(x,y);
-  			cell2.setPos(x+1,y-1);
-  			cell.setPlayer(<X>);
-  			cell2.setPlayer(<Player1>);
-  			board := board^[cell];
-  			board := board^[cell2];
-  		)
-  		else if (dir = <downer_left>) then (
-  			cell.setPos(x,y);
-  			cell2.setPos(x-1,y+1);
-  			cell.setPlayer(<X>);
-  			cell2.setPlayer(<Player1>);
-  			board := board^[cell];
-  			board := board^[cell2];
-  		)
-  		else if (dir = <downer_right>) then (
-  			cell.setPos(x,y);
-  			cell2.setPos(x,y+1);
-  			cell.setPlayer(<X>);
-  			cell2.setPlayer(<Player1>);
-  			board := board^[cell];
-  			board := board^[cell2];
-  		);
-  		aux := tl(aux);
-  		count := count + 1;
+  		if ((dir = <left> and x-1 = -5)
+  				or (dir = <right> and x+1 = 5)
+  				or (dir = <upper_left> and y-1 = -5)
+  				or (dir = <upper_right> and (x+1 = 5 or y-1 = -5))
+  				or (dir = <downer_left> and (x-1 = -5 or y+1 = 5))
+  				or (dir = <downer_right> and y+1 = 5)) then (
+  			return false;
+	  	);
+	  	aux := tl(aux);
+	  	count := count + 1;
   	);
-  )
-  pre n = len(pieces)
-  post aux = [];
+  	return true;
+  );
   
 functions
 -- TODO Define functiones here
